@@ -1,0 +1,124 @@
+<project name="Samifier" default="compile" basedir=".">
+    <description>
+        Generate FASTA file of proteins from a genome (in FASTA format), given the protein divisions.
+    </description>
+    <!-- set global properties for this build -->
+    <property name="app.name" value="protein_generator"/>
+    <property name="src.dir" value="${basedir}/src" />
+    <property name="test.dir" value="${basedir}/test" />
+    <property name="lib.dir" location="${basedir}/lib"/>
+    <property name="build.dir" location="${basedir}/build"/>
+    <property name="dist"  location="${basedir}/dist"/>
+    <property name="build.classes.dir" value="${build.dir}/classes" />
+    <property name="build.classes-test.dir" value="${build.dir}/classes-test" />
+    <property name="build.reports.dir" value="${build.dir}/reports" />
+
+
+    <path id="build.classpath">
+      <fileset dir="${lib.dir}">
+        <include name="**/*.jar"/>
+      </fileset>
+    </path>
+
+    <path id="test.classpath">
+      <path refid="build.classpath" />
+      <dirset dir="${build.classes.dir}" />
+      <dirset dir="${build.classes-test.dir}" />
+      <dirset dir="${test.dir}/resources" />
+    </path>
+
+    <target name="init">
+      <!-- Create the time stamp -->
+      <tstamp/>
+      <!-- Create the build directory structure used by compile -->
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${build.classes.dir}"/>
+    </target>
+
+    <target name="compile" depends="init"
+          description="compile the source " >
+      <!-- Compile the java code from ${src} into ${build} -->
+      <javac srcdir="${src.dir}" destdir="${build.classes.dir}" includeantruntime="false">
+        <classpath refid="build.classpath" />
+      </javac>
+    </target>
+
+    <target name="compile-test" depends="compile">
+      <mkdir dir="${build.classes-test.dir}" />
+      <javac srcdir="${test.dir}" destdir="${build.classes-test.dir}"
+        debug="true" includeantruntime="false">
+        <classpath refid="test.classpath" />
+      </javac>
+    </target>
+
+    <target name="test" depends="compile-test">
+      <inner-unittest />
+      <fail if="tests.failed" message="Test failures." />
+    </target>
+
+    <target name="dist" depends="compile"
+          description="generate the distribution" >
+      <!-- Create the distribution directory -->
+      <mkdir dir="${dist}/lib"/>
+
+      <jar destfile="${dist}/${app.name}.jar"
+        basedir="${build.classes.dir}"
+        excludes="**/Test.class" >
+        <zipgroupfileset dir="${lib.dir}" includes="**/*.jar" excludes="junit*"/>
+          <fileset dir=".">
+              <include name="LICENSE"/>
+          </fileset>
+
+          <manifest>
+            <attribute name="Main-Class"
+                value="au.org.intersect.samifier.Samifier"/>
+          </manifest>
+      </jar>
+    </target>
+
+    <target name="clean"
+          description="clean up" >
+      <!-- Delete the ${build} and ${dist} directory trees -->
+      <delete dir="${build.dir}"/>
+      <delete dir="${dist}"/>
+    </target>
+
+    <macrodef name="inner-unittest">
+      <sequential>
+
+        <mkdir dir="${build.reports.dir}/unittest/xml" />
+        <mkdir dir="${build.reports.dir}/unittest/html" />
+
+        <junit fork="true" forkmode="once" printsummary="withOutAndErr"
+            haltonerror="on">
+          <classpath>
+            <path refid="test.classpath" />
+          </classpath>
+          <formatter type="plain" />
+          <batchtest todir="${build.reports.dir}/unittest">
+            <fileset dir="${test.dir}">
+              <include name="**/*UnitTest.java" />
+            </fileset>
+          </batchtest>
+          <!--
+          <formatter type="xml" />
+          <batchtest todir="${build.reports.dir}/unittest/xml"
+            failureproperty="tests.failed">
+            <fileset dir="${test.dir}">
+              <include name="**/*UnitTest.java" />
+            </fileset>
+          </batchtest>
+          -->
+        </junit>
+
+        <!--
+        <junitreport todir="${build.reports.dir}/unittest/xml">
+          <fileset dir="${build.reports.dir}/unittest/xml">
+            <include name="TEST-*.xml" />
+          </fileset>
+          <report format="frames" todir="${build.reports.dir}/unittest/html" />
+        </junitreport>
+        -->
+      </sequential>
+    </macrodef>
+</project>
