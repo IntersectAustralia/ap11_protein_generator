@@ -34,6 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ProteinGenerator {
 
+    private static final int FASTA_LINE_LENGTH = 60;
+
     private ProteinGenerator(){}
 
     public static String invertNucleotideSequence(String sequence)
@@ -123,16 +125,21 @@ public class ProteinGenerator {
 
                 writer.write(fastaHeader(databaseName, location.getName()));
                 writer.newLine();
+                String aminoAcidSequence = null;
                 if (location.getDirection().equals(ProteinLocation.BACKWARD))
                 {
                     StringBuilder invertedReversedSequence = new StringBuilder(invertNucleotideSequence(sequence.toString())).reverse();
-                    writer.write(table.proteinToAminoAcidSequence(invertedReversedSequence.toString()));
+                    aminoAcidSequence = table.proteinToAminoAcidSequence(invertedReversedSequence.toString());
                 }
                 else
                 {
-                    writer.write(table.proteinToAminoAcidSequence(sequence.toString()));
+                    aminoAcidSequence = table.proteinToAminoAcidSequence(sequence.toString());
                 }
-                writer.newLine();
+                for (String part : aminoAcidSequence.split("(?<=\\G.{"+FASTA_LINE_LENGTH+"})"))
+                {
+                    writer.write(part);
+                    writer.newLine();
+                }
             }
         }
         finally
