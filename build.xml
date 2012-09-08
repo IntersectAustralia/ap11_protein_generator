@@ -1,4 +1,4 @@
-<project name="Samifier" default="compile" basedir=".">
+<project name="Protein Generator" default="compile" basedir=".">
     <description>
         Generate FASTA file of proteins from a genome (in FASTA format), given the protein divisions.
     </description>
@@ -71,7 +71,7 @@
 
           <manifest>
             <attribute name="Main-Class"
-                value="au.org.intersect.samifier.Samifier"/>
+                value="au.org.intersect.protein_generator.ProteinGenerator"/>
           </manifest>
       </jar>
     </target>

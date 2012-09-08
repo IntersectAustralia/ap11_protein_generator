@@ -125,7 +125,8 @@ public class ProteinGenerator {
                 writer.newLine();
                 if (location.getDirection().equals(ProteinLocation.BACKWARD))
                 {
-                    writer.write(table.proteinToAminoAcidSequence(sequence.reverse().toString()));
+                    StringBuilder invertedReversedSequence = new StringBuilder(invertNucleotideSequence(sequence.toString())).reverse();
+                    writer.write(table.proteinToAminoAcidSequence(invertedReversedSequence.toString()));
                 }
                 else
                 {
@@ -154,35 +155,41 @@ public class ProteinGenerator {
 
     public static void main(String[] args)
     {
+        Option translationTableOpt =
+            OptionBuilder.withArgName("Translation Table File")
+                         .hasArg()
+                         .withDescription("File containing a mapping of codons to amino acids, in the format used by NCBI.")
+                         .create("t");
         Option splitIntervalOpt =
-            OptionBuilder.withArgName("splitInterval")
+            OptionBuilder.withArgName("Split Interval")
                          .hasArg()
                          .withDescription("Size of the intervals into which the genome will be split. Can't be used with the -g option.")
                          .create("i");
         Option glimmerFileOpt =
-            OptionBuilder.withArgName("glimmerFile")
+            OptionBuilder.withArgName("Glimmer File")
                          .hasArg()
                          .withDescription("Glimmer txt file. Can't be used with the -i option.")
                          .create("g");
         Option genomeFileOpt =
-            OptionBuilder.withArgName("genomeFile")
+            OptionBuilder.withArgName("Genome File")
                          .hasArg()
                          .withDescription("Genome file in FASTA format")
                          .isRequired()
                          .create("f");
         Option databaseNameOpt =
-            OptionBuilder.withArgName("databaseName")
+            OptionBuilder.withArgName("Database Name")
                          .hasArg()
                          .withDescription("Database name")
                          .isRequired()
                          .create("d");
         Option outputFileOpt =
-            OptionBuilder.withArgName("outputFile")
+            OptionBuilder.withArgName("Output File")
                          .hasArg()
                          .withDescription("Filename to write the FASTA format file to")
                          .isRequired()
                          .create("o");
         Options options = new Options();
+        options.addOption(translationTableOpt);
         options.addOption(splitIntervalOpt);
         options.addOption(glimmerFileOpt);
         options.addOption(genomeFileOpt);
@@ -192,6 +199,7 @@ public class ProteinGenerator {
         CommandLineParser parser = new GnuParser();
         try {
             CommandLine line = parser.parse( options, args );
+            File translationTableFile = new File(line.getOptionValue("t"));
             File genomeFile = new File(line.getOptionValue("f"));
             File glimmerFile = new File(line.getOptionValue("g"));
             String interval = line.getOptionValue("i");
@@ -203,11 +211,22 @@ public class ProteinGenerator {
             {
                 throw new ParseException("Only one of -i or -g permitted");
             }
+            List<ProteinLocation> locations = null;
+            if (glimmerFile != null)
+            {
+                locations = ProteinGenerator.parseGlimmerFile(glimmerFile);
+            }
+            else
+            {
+                // TODO: generate locations from split interval
+            }
+            Writer output = new FileWriter(outfile);
+            ProteinGenerator.generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), output);
         }
         catch (ParseException pe)
         {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("samifier", options, true);
+            formatter.printHelp("protein_generator", options, true);
         }
         catch (Exception e)
         {
