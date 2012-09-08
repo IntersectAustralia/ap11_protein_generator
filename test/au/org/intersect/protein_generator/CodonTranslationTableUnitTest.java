@@ -1,8 +1,32 @@
 package au.org.intersect.protein_generator;
 
+import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+
+import org.junit.Test;
+
+import java.io.File;
+
 public class CodonTranslationTableUnitTest
 {
 
+    @Test
+    public void testParseTableFile()
+    {
+        try {
+            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
+            assertEquals("ATT codes for Isoleucine", "I", table.toAminoAcid("ATT"));
+            assertEquals("Should have 61 codons", 61, table.getCodons().length);
+            assertEquals("Should have 3 start codons", 3, table.getStartCodons().length);
+            assertEquals("Should have 3 stop codons", 3, table.getStopCodons().length);
+        }
+        catch(Exception e)
+        {
+            fail("Unexpected exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 /*
     @Test
     public void testNucleotideToAminoAcidSequence()

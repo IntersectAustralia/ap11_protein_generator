@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileWriter;
-//import java.io.Writer;
+import java.io.Writer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -33,147 +33,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class ProteinGenerator {
-    // Initialised with double brace initialisation
-    // See: http://www.c2.com/cgi/wiki?DoubleBraceInitialization
-    public static final Map<String, String> CODONS = Collections.unmodifiableMap(
-        new HashMap<String, String>() {{
-            // Isoleucine
-            put("ATT", "I");
-            put("ATC", "I");
-            put("ATA", "I");
-
-            // Leucine
-            put("CTT", "L");
-            put("CTC", "L");
-            put("CTA", "L");
-            put("CTG", "L");
-            put("TTA", "L");
-            put("TTG", "L");
-
-            // Valine
-            put("GTT", "V");
-            put("GTC", "V");
-            put("GTA", "V");
-            put("GTG", "V");
-
-            // Phenylalanine
-            put("TTT", "F");
-            put("TTC", "F");
-
-            // Methionine
-            put("ATG", "M"); // Also the start codon
-
-            // Cysteine
-            put("TGT", "C");
-            put("TGC", "C");
-
-            // Arginine
-            put("GCT", "A");
-            put("GCC", "A");
-            put("GCA", "A");
-            put("GCG", "A");
-
-            // Proline
-            put("CCT", "P");
-            put("CCC", "P");
-            put("CCA", "P");
-            put("CCG", "P");
-
-            // Threonine
-            put("ACT", "T");
-            put("ACC", "T");
-            put("ACA", "T");
-            put("ACG", "T");
-
-            // Serine
-            put("TCT", "S");
-            put("TCC", "S");
-            put("TCA", "S");
-            put("TCG", "S");
-            put("AGT", "S");
-            put("AGC", "S");
-
-            // Tyrosine
-            put("TAT", "Y");
-            put("TAC", "Y");
-
-            // Tryptophan
-            put("TGG", "W");
-
-            // Glutamine
-            put("CAA", "Q");
-            put("CAG", "Q");
-
-            // Asparagine
-            put("AAT", "N");
-            put("AAC", "N");
-
-            // Histidine
-            put("CAT", "H");
-            put("CAC", "H");
-
-            // Glutamic acid
-            put("GAA", "E");
-            put("GAG", "E");
-
-            // Aspartic acid
-            put("GAT", "D");
-            put("GAC", "D");
-
-            // Lysine
-            put("AAA", "K");
-            put("AAG", "K");
-
-            // Arginine
-            put("CGT", "R");
-            put("CGC", "R");
-            put("CGA", "R");
-            put("CGG", "R");
-            put("AGA", "R");
-            put("AGG", "R");
-        }}
-    );
-
-    public static final String START_CODON = "ATG";
-
-    public static final Set<String> STOP_CODONS = Collections.unmodifiableSet(
-        new HashSet<String>() {{
-            add("TAA");
-            add("TAG");
-            add("TGA");
-        }}
-    );
 
     private ProteinGenerator(){}
-
-    /**
-     *
-     */
-    public static String nucleotideToAminoAcidSequence(String nucleotideSequence)
-        throws UnknownCodonException
-    {
-        int length = nucleotideSequence.length();
-        StringBuilder aminoAcidSequence = new StringBuilder();
-        String codon;
-        int codonCount = 0;
-        for (int i=0; i < length; i+=3)
-        {
-            codon = nucleotideSequence.substring(i, i+3).toUpperCase();
-            codonCount++;
-            if (STOP_CODONS.contains(codon))
-            {
-                continue;
-            }
-            if (!CODONS.containsKey(codon))
-            {
-                //throw new UnknownCodonException(codon + " is not a known codon (at codon "+codonCount+")");
-System.out.println("Junk codon "+codon+" ("+codonCount+")");
-                continue;
-            }
-            aminoAcidSequence.append(CODONS.get(codon));
-        }
-        return aminoAcidSequence.toString();
-    }
 
     public static String invertNucleotideSequence(String sequence)
     {
@@ -219,7 +80,7 @@ System.out.println("Junk codon "+codon+" ("+codonCount+")");
         return proteinLocations;
     }
 
-    public static void generateProteinsFile(File genomeFile, List<ProteinLocation> locations, String outFilename)
+    public static void generateProteinsFile(String databaseName, File genomeFile, List<ProteinLocation> locations, CodonTranslationTable table, Writer output)
         throws IOException, FileNotFoundException, UnknownCodonException
     {
         BufferedReader reader = null;
@@ -227,7 +88,7 @@ System.out.println("Junk codon "+codon+" ("+codonCount+")");
         Collections.sort(locations, new ProteinLocationComparator());
         try {
             reader = new BufferedReader(new FileReader(genomeFile));
-            writer = new BufferedWriter(new FileWriter(outFilename));
+            writer = new BufferedWriter(output);
 
             // Skip header
             reader.readLine();
@@ -235,7 +96,6 @@ System.out.println("Junk codon "+codon+" ("+codonCount+")");
             int readCursor = 0;
             for (ProteinLocation location : locations)
             {
-System.err.println("SMC location start="+location.getStartIndex()+", length="+location.getLength()+", direction="+location.getDirection());
                 StringBuilder sequence = new StringBuilder();
                 int startIndex = location.getStartIndex();
                 int stopIndex = startIndex + location.getLength() - 1;
@@ -261,17 +121,17 @@ System.err.println("SMC location start="+location.getStartIndex()+", length="+lo
                 readStop = stopIndex % line.length();
                 sequence.append(line.substring(readStart, readStop + 1));
 
-System.out.println(sequence);
+                writer.write(fastaHeader(databaseName, location.getName()));
+                writer.newLine();
                 if (location.getDirection().equals(ProteinLocation.BACKWARD))
                 {
-                    System.out.println("BACKWARD:");
-                    System.out.println(nucleotideToAminoAcidSequence(sequence.reverse().toString()));
+                    writer.write(table.proteinToAminoAcidSequence(sequence.reverse().toString()));
                 }
                 else
                 {
-                    System.out.println("FORWARD:");
-                    System.out.println(nucleotideToAminoAcidSequence(sequence.toString()));
+                    writer.write(table.proteinToAminoAcidSequence(sequence.toString()));
                 }
+                writer.newLine();
             }
         }
         finally
@@ -285,6 +145,11 @@ System.out.println(sequence);
                 writer.close();
             }
         }
+    }
+
+    private static String fastaHeader(String db, String name)
+    {
+        return ">gn1|"+db+"|"+name;
     }
 
     public static void main(String[] args)

@@ -6,9 +6,10 @@ import static org.hamcrest.CoreMatchers.*;
 import org.junit.Test;
 
 import java.io.File;
-//import java.util.ArrayList;
+import java.io.StringWriter;
 import java.util.List;
-//import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * * Tests {@link Samifier}
@@ -42,10 +43,16 @@ public final class ProteinGeneratorUnitTest
     public void testGenerateProteinsFile()
     {
         try {
-            File f = new File(getClass().getResource("/test_glimmer.txt").getFile());
-            List<ProteinLocation> locations = ProteinGenerator.parseGlimmerFile(f);
             File genomeFile = new File(getClass().getResource("/test_genome.faa").getFile());
-            ProteinGenerator.generateProteinsFile(genomeFile, locations, "out.fa");
+            File glimmerFile = new File(getClass().getResource("/test_glimmer.txt").getFile());
+            File tableFile = new File(getClass().getResource("/bacterial_translation_table.txt").getFile());
+            List<ProteinLocation> locations = ProteinGenerator.parseGlimmerFile(glimmerFile);
+            CodonTranslationTable translationTable = CodonTranslationTable.parseTableFile(tableFile);
+            StringWriter out = new StringWriter();
+            ProteinGenerator.generateProteinsFile("testdb", genomeFile, locations, translationTable, out);
+            List<String> expectedLines = FileUtils.readLines(new File(getClass().getResource("/test_protein_file.fa").getFile()));
+
+            assertEquals("Should produce a FASTA file of amino acid sequences", expectedLines.toArray(new String[0]), out.toString().split(System.getProperty("line.separator")));
         }
         catch(Exception e)
         {
