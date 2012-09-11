@@ -141,4 +141,13 @@ public class CodonTranslationTableUnitTest
             e.printStackTrace();
         }
     }
+
+    @Test(expected = UnknownCodonException.class)
+    public void testNucleotideToAminoAcidSequenceWithBadCodon()
+        throws Exception
+    {
+        File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+        CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
+        table.proteinToAminoAcidSequence("ZZZ");
+    }
 }
