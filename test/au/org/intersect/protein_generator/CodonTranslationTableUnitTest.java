@@ -27,67 +27,17 @@ public class CodonTranslationTableUnitTest
             e.printStackTrace();
         }
     }
-/*
+
     @Test
-    public void testNucleotideToAminoAcidSequence()
+    public void testToStartAminoAcid()
     {
         try {
-            // Isoleucine
-            assertEquals("3 codons code for Isoleucine", "III", ProteinGenerator.nucleotideToAminoAcidSequence("ATTATCATA"));
+            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
 
-            // Leucine
-            assertEquals("6 codons code for Leucine", "LLLLLL", ProteinGenerator.nucleotideToAminoAcidSequence("CTTCTCCTACTGTTATTG"));
-
-            // Valine
-            assertEquals("4 codons code for Valine", "VVVV", ProteinGenerator.nucleotideToAminoAcidSequence("GTTGTCGTAGTG"));
-
-            // Phenylalanine
-            assertEquals("2 codons code for Phenylalanine", "FF", ProteinGenerator.nucleotideToAminoAcidSequence("TTTTTC"));
-
-            // Methionine
-            assertEquals("1 codon codes for Methionine", "M", ProteinGenerator.nucleotideToAminoAcidSequence("ATG"));
-
-            // Cysteine
-            assertEquals("2 codons code for Cysteine", "CC", ProteinGenerator.nucleotideToAminoAcidSequence("TGTTGC"));
-
-            // Arginine
-            assertEquals("4 codons code for Arginine", "AAAA", ProteinGenerator.nucleotideToAminoAcidSequence("GCTGCCGCAGCG"));
-
-            // Proline
-            assertEquals("4 codons code for Proline", "PPPP", ProteinGenerator.nucleotideToAminoAcidSequence("CCTCCCCCACCG"));
-
-            // Threonine
-            assertEquals("4 codons code for Threonine", "TTTT", ProteinGenerator.nucleotideToAminoAcidSequence("ACTACCACAACG"));
-
-            // Serine
-            assertEquals("6 codons code for Serine", "SSSSSS", ProteinGenerator.nucleotideToAminoAcidSequence("TCTTCCTCATCGAGTAGC"));
-
-            // Tyrosine
-            assertEquals("2 codons code for Tyrosine", "YY", ProteinGenerator.nucleotideToAminoAcidSequence("TATTAC"));
-
-            // Tryptophan
-            assertEquals("1 codon codes for Tryptophan", "W", ProteinGenerator.nucleotideToAminoAcidSequence("TGG"));
-
-            // Glutamine
-            assertEquals("2 codons code for Glutamine", "QQ", ProteinGenerator.nucleotideToAminoAcidSequence("CAACAG"));
-
-            // Asparagine
-            assertEquals("2 codons code for Asparagine", "NN", ProteinGenerator.nucleotideToAminoAcidSequence("AATAAC"));
-
-            // Histidine
-            assertEquals("2 codons code for Histidine", "HH", ProteinGenerator.nucleotideToAminoAcidSequence("CATCAC"));
-
-            // Glutamic acid
-            assertEquals("2 codons code for Glutamic acid", "EE", ProteinGenerator.nucleotideToAminoAcidSequence("GAAGAG"));
-
-            // Aspartic acid 
-            assertEquals("2 codons code for Aspartic acid", "DD", ProteinGenerator.nucleotideToAminoAcidSequence("GATGAC"));
-
-            // Lysine
-            assertEquals("2 codons code for Lysine", "KK", ProteinGenerator.nucleotideToAminoAcidSequence("AAAAAG"));
-
-            // Arginine
-            assertEquals("6 codons code for Arginine", "RRRRRR", ProteinGenerator.nucleotideToAminoAcidSequence("CGTCGCCGACGGAGAAGG"));
+            assertEquals("TTG maps to M", "M", table.toStartAminoAcid("TTG"));
+            assertEquals("CTG maps to M", "M", table.toStartAminoAcid("TTG"));
+            assertEquals("ATG maps to M", "M", table.toStartAminoAcid("TTG"));
         }
         catch(Exception e)
         {
@@ -95,5 +45,100 @@ public class CodonTranslationTableUnitTest
             e.printStackTrace();
         }
     }
-*/
+
+    @Test
+    public void testToAminoAcid()
+    {
+        try {
+            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
+
+            assertEquals("A codon containing nucleotide W maps to X", "X", table.toAminoAcid("AAW"));
+            assertEquals("A codon containing nucleotide S maps to X", "X", table.toAminoAcid("AAS"));
+            assertEquals("A codon containing nucleotide M maps to X", "X", table.toAminoAcid("AAM"));
+            assertEquals("A codon containing nucleotide K maps to X", "X", table.toAminoAcid("AAK"));
+            assertEquals("A codon containing nucleotide R maps to X", "X", table.toAminoAcid("AAR"));
+            assertEquals("A codon containing nucleotide Y maps to X", "X", table.toAminoAcid("AAY"));
+
+            assertNull("An unknown codon returns null", table.toAminoAcid("ZZZ"));
+        }
+        catch(Exception e)
+        {
+            fail("Unexpected exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testNucleotideToAminoAcidSequence()
+    {
+        try {
+            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
+            assertEquals("Stop codons are not translated", "", table.proteinToAminoAcidSequence("TAATAGTGA"));
+
+            // All the sequences below start with the standard start codon ATG
+            // Isoleucine
+            assertEquals("3 codons code for Isoleucine", "MIII", table.proteinToAminoAcidSequence("ATGATTATCATA"));
+
+            // Leucine
+            assertEquals("6 codons code for Leucine", "MLLLLLL", table.proteinToAminoAcidSequence("ATGCTTCTCCTACTGTTATTG"));
+
+            // Valine
+            assertEquals("4 codons code for Valine", "MVVVV", table.proteinToAminoAcidSequence("ATGGTTGTCGTAGTG"));
+
+            // Phenylalanine
+            assertEquals("2 codons code for Phenylalanine", "MFF", table.proteinToAminoAcidSequence("ATGTTTTTC"));
+
+            // Methionine
+            assertEquals("1 codon codes for Methionine", "M", table.proteinToAminoAcidSequence("ATG"));
+
+            // Cysteine
+            assertEquals("2 codons code for Cysteine", "MCC", table.proteinToAminoAcidSequence("ATGTGTTGC"));
+
+            // Arginine
+            assertEquals("4 codons code for Arginine", "MAAAA", table.proteinToAminoAcidSequence("ATGGCTGCCGCAGCG"));
+
+            // Proline
+            assertEquals("4 codons code for Proline", "MPPPP", table.proteinToAminoAcidSequence("ATGCCTCCCCCACCG"));
+
+            // Threonine
+            assertEquals("4 codons code for Threonine", "MTTTT", table.proteinToAminoAcidSequence("ATGACTACCACAACG"));
+
+            // Serine
+            assertEquals("6 codons code for Serine", "MSSSSSS", table.proteinToAminoAcidSequence("ATGTCTTCCTCATCGAGTAGC"));
+
+            // Tyrosine
+            assertEquals("2 codons code for Tyrosine", "MYY", table.proteinToAminoAcidSequence("ATGTATTAC"));
+
+            // Tryptophan
+            assertEquals("1 codon codes for Tryptophan", "MW", table.proteinToAminoAcidSequence("ATGTGG"));
+
+            // Glutamine
+            assertEquals("2 codons code for Glutamine", "MQQ", table.proteinToAminoAcidSequence("ATGCAACAG"));
+
+            // Asparagine
+            assertEquals("2 codons code for Asparagine", "MNN", table.proteinToAminoAcidSequence("ATGAATAAC"));
+
+            // Histidine
+            assertEquals("2 codons code for Histidine", "MHH", table.proteinToAminoAcidSequence("ATGCATCAC"));
+
+            // Glutamic acid
+            assertEquals("2 codons code for Glutamic acid", "MEE", table.proteinToAminoAcidSequence("ATGGAAGAG"));
+
+            // Aspartic acid 
+            assertEquals("2 codons code for Aspartic acid", "MDD", table.proteinToAminoAcidSequence("ATGGATGAC"));
+
+            // Lysine
+            assertEquals("2 codons code for Lysine", "MKK", table.proteinToAminoAcidSequence("ATGAAAAAG"));
+
+            // Arginine
+            assertEquals("6 codons code for Arginine", "MRRRRRR", table.proteinToAminoAcidSequence("ATGCGTCGCCGACGGAGAAGG"));
+        }
+        catch(Exception e)
+        {
+            fail("Unexpected exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

@@ -37,4 +37,10 @@ public class ProteinLocation
     {
         return direction;
     }
+
+    public String toString()
+    {
+        return name+", startIndex="+startIndex+", length="+length+", direction="+direction;
+    }
+
 }

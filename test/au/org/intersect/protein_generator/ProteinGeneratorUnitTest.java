@@ -30,7 +30,8 @@ public final class ProteinGeneratorUnitTest
             fail("Unexpected exception: " + e.getMessage());
             e.printStackTrace();
         }
-        assertEquals("Should have 10 protein locations", 10, proteins.size());
+        assertEquals("Should have 13 protein locations", 13, proteins.size());
+        ProteinLocation location1 = proteins.get(0);
     }
 
     @Test
@@ -53,6 +54,24 @@ public final class ProteinGeneratorUnitTest
             List<String> expectedLines = FileUtils.readLines(new File(getClass().getResource("/test_protein_file.fa").getFile()));
 
             assertEquals("Should produce a FASTA file of amino acid sequences", expectedLines.toArray(new String[0]), out.toString().split(System.getProperty("line.separator")));
+        }
+        catch(Exception e)
+        {
+            fail("Unexpected exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // TODO
+    public void testCreateLocations()
+    {
+        try {
+            File genomeFile = new File(getClass().getResource("/test_genome_short.faa").getFile());
+            List<ProteinLocation> locations = ProteinGenerator.createLocations(genomeFile, 20);
+            for (ProteinLocation location : locations)
+            {
+                System.out.println(location);
+            }
         }
         catch(Exception e)
         {

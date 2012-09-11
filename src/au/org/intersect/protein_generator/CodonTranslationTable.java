@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CodonTranslationTable
 {
+    public static final String UNKNOWN_AMINO_ACID = "X";
+
     private Map<String, String> codonMap;
     private Map<String, String> startCodonMap;
     private Set<String> stopCodons;
@@ -101,7 +103,16 @@ public class CodonTranslationTable
 
     public String toAminoAcid(String codon)
     {
-        return codonMap.get(codon);
+        if (codonMap.containsKey(codon))
+        {
+            return codonMap.get(codon);
+        }
+        else if (codon.matches(".*[WSMKRY]+.*"))
+        {
+            // TODO: log this event
+            return UNKNOWN_AMINO_ACID;
+        }
+        return null;
     }
 
     public String toStartAminoAcid(String codon)
@@ -123,26 +134,34 @@ public class CodonTranslationTable
         int startIndex = 0;
 
         // Start codon may be different
-        String startCodon = nucleotideSequence.substring(0,3);
+        String startCodon = nucleotideSequence.substring(0,3).toUpperCase();
         if (startCodonMap.containsKey(startCodon))
         {
-            aminoAcidSequence.append(startCodonMap.get(startCodon));
+            aminoAcidSequence.append(toStartAminoAcid(startCodon));
             startIndex = 3;
         }
 
         for (int i=startIndex; i < length; i+=3)
         {
+            if ((i+3) > length)
+            {
+                // TODO: log to error file about sequence length being
+                // non-multiple of 3 (i.e. this is not a full codon)
+                throw new UnknownCodonException(nucleotideSequence.substring(i, length) + " is not a known codon (at codon "+codonCount+")");
+            }
             codon = nucleotideSequence.substring(i, i+3).toUpperCase();
             codonCount++;
             if (stopCodons.contains(codon))
             {
                 continue;
             }
-            if (!codonMap.containsKey(codon))
+            String aminoAcid = toAminoAcid(codon);
+            if (aminoAcid == null)
             {
-                throw new UnknownCodonException(codon + " is not a known codon (at codon "+codonCount+")");
+                throw new UnknownCodonException(codon + " is not a known codon (at codon #"+codonCount+")");
             }
-            aminoAcidSequence.append(codonMap.get(codon));
+
+            aminoAcidSequence.append(aminoAcid);
         }
 
         return aminoAcidSequence.toString();

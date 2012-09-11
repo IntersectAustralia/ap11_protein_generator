@@ -68,11 +68,11 @@ public class ProteinGenerator {
 
             if (direction.startsWith(ProteinLocation.FORWARD))
             {
-                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex, ProteinLocation.FORWARD));
+                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, ProteinLocation.FORWARD));
             }
             else if (direction.startsWith(ProteinLocation.BACKWARD))
             {
-                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex, ProteinLocation.BACKWARD));
+                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.BACKWARD));
             }
             else
             {
@@ -82,47 +82,84 @@ public class ProteinGenerator {
         return proteinLocations;
     }
 
+    public static List<ProteinLocation> createLocations(File genomeFile, int codonsPerInterval)
+        throws IOException, FileNotFoundException
+    {
+        BufferedReader reader = new BufferedReader(new FileReader(genomeFile));
+        int baseCount = 0;
+        String line = null;
+        while ((line = reader.readLine()) != null)
+        {
+            if (line.matches("^>.*$"))
+            {
+                continue;
+            }
+
+            baseCount += StringUtils.chomp(line).length();
+        }
+
+        List<ProteinLocation> locations = new ArrayList<ProteinLocation>();
+        int basesPerInterval = codonsPerInterval * 3;
+        int halfIntervalSize = basesPerInterval / 2;
+        int nameIndex = 0;
+        for (int i=0; i < baseCount; i += basesPerInterval)
+        {
+            addLocations(locations, i, nameIndex, basesPerInterval, baseCount, false);
+            addLocations(locations, i+halfIntervalSize, nameIndex, basesPerInterval, baseCount, true);
+            nameIndex++;
+        }
+        return locations;
+    }
+
+    private static void addLocations(List<ProteinLocation> locations, int start, int nameIndex, int basesPerInterval, int baseCount, boolean isHalfInterval)
+    {
+        for (int subIndex=0; subIndex < 3; subIndex++)
+        {
+            int end = start + subIndex + basesPerInterval;
+            if (end >= baseCount)
+            {
+                end = baseCount - 1;
+            }
+
+            String name = "p"+nameIndex+(isHalfInterval ? "b" : "")+"."+subIndex;
+            int length = end - (start + subIndex);
+            locations.add(new ProteinLocation(name, start+subIndex+1, length, ProteinLocation.FORWARD));
+        }
+    }
+
+    private static StringBuilder readGenomeFile(File genomeFile)
+        throws IOException, FileNotFoundException
+    {
+          BufferedReader reader = new BufferedReader(new FileReader(genomeFile));
+          StringBuilder sequence = new StringBuilder();
+          String line;
+          while ((line = reader.readLine()) != null)
+          {
+              if (line.matches("^>.*$"))
+              {
+                  continue;
+              }
+              sequence.append(line);
+          }
+          return sequence;
+    }
+
     public static void generateProteinsFile(String databaseName, File genomeFile, List<ProteinLocation> locations, CodonTranslationTable table, Writer output)
         throws IOException, FileNotFoundException, UnknownCodonException
     {
-        BufferedReader reader = null;
         BufferedWriter writer = null;
         Collections.sort(locations, new ProteinLocationComparator());
+        StringBuilder genomeString = null;
         try {
-            reader = new BufferedReader(new FileReader(genomeFile));
+            genomeString = readGenomeFile(genomeFile);
             writer = new BufferedWriter(output);
 
             // Skip header
-            reader.readLine();
-            String line = null;
-            int readCursor = 0;
             for (ProteinLocation location : locations)
             {
-                StringBuilder sequence = new StringBuilder();
-                int startIndex = location.getStartIndex();
-                int stopIndex = startIndex + location.getLength() - 1;
-
-                // Read forward to startIndex
-                while (readCursor < startIndex)
-                {
-                    line = StringUtils.chomp(reader.readLine());
-                    readCursor += line.length();
-                }
-
-                int readStart = (startIndex - 1) % line.length();
-                int readStop  = line.length();
-
-                while (readCursor < stopIndex)
-                {
-                    sequence.append(line.substring(readStart, readStop));
-                    readStart = 0;
-                    line = StringUtils.chomp(reader.readLine());
-                    readCursor += line.length();
-                }
-
-                readStop = stopIndex % line.length();
-                sequence.append(line.substring(readStart, readStop + 1));
-
+                int startIndex = location.getStartIndex() - 1;
+                int stopIndex = startIndex + location.getLength();
+                String sequence = genomeString.substring(startIndex, stopIndex); 
                 writer.write(fastaHeader(databaseName, location.getName()));
                 writer.newLine();
                 String aminoAcidSequence = null;
@@ -144,10 +181,7 @@ public class ProteinGenerator {
         }
         finally
         {
-            if (reader != null)
-            {
-                reader.close();
-            }
+            genomeString = null;
             if (writer != null)
             {
                 writer.close();
@@ -170,7 +204,8 @@ public class ProteinGenerator {
         Option splitIntervalOpt =
             OptionBuilder.withArgName("Split Interval")
                          .hasArg()
-                         .withDescription("Size of the intervals into which the genome will be split. Can't be used with the -g option.")
+                         .withType(Number.class)
+                         .withDescription("Size of the intervals (number of codons) into which the genome will be split. Can't be used with the -g option.")
                          .create("i");
         Option glimmerFileOpt =
             OptionBuilder.withArgName("Glimmer File")
@@ -226,6 +261,8 @@ public class ProteinGenerator {
             else
             {
                 // TODO: generate locations from split interval
+                int codonsPerInterval = Integer.parseInt(interval);
+                locations = ProteinGenerator.createLocations(genomeFile, codonsPerInterval);
             }
             Writer output = new FileWriter(outfile);
             ProteinGenerator.generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), output);
