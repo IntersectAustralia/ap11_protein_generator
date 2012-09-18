@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ProteinGenerator {
 
+    private static final int BASES_PER_CODON = 3;
     private static final int FASTA_LINE_LENGTH = 60;
 
     private ProteinGenerator(){}
@@ -70,9 +71,9 @@ public class ProteinGenerator {
             {
                 proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, ProteinLocation.FORWARD));
             }
-            else if (direction.startsWith(ProteinLocation.BACKWARD))
+            else if (direction.startsWith(ProteinLocation.REVERSE))
             {
-                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.BACKWARD));
+                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.REVERSE));
             }
             else
             {
@@ -98,32 +99,92 @@ public class ProteinGenerator {
             baseCount += StringUtils.chomp(line).length();
         }
 
-        List<ProteinLocation> locations = new ArrayList<ProteinLocation>();
-        int basesPerInterval = codonsPerInterval * 3;
-        int halfIntervalSize = basesPerInterval / 2;
-        int nameIndex = 0;
-        for (int i=0; i < baseCount; i += basesPerInterval)
+        int basesPerInterval = codonsPerInterval * BASES_PER_CODON;
+        if (basesPerInterval >= baseCount)
         {
-            addLocations(locations, i, nameIndex, basesPerInterval, baseCount, false);
-            addLocations(locations, i+halfIntervalSize, nameIndex, basesPerInterval, baseCount, true);
+            // TODO: log this to error file
+            return null;
+        }
+
+        List<ProteinLocation> locations = new ArrayList<ProteinLocation>();
+        int nameIndex = 0;
+        int halfIntervalSize = basesPerInterval / 2;
+        int lastCodonStartPosition = baseCount - BASES_PER_CODON;
+
+        // Forward locations
+        for (int i=1; i <= baseCount; i += basesPerInterval)
+        {
+            addLocations(locations, i, nameIndex, basesPerInterval, baseCount, true, false);
+            int halfIntervalStart = i + halfIntervalSize;
+            if (halfIntervalStart <= lastCodonStartPosition)
+            {
+                addLocations(locations, halfIntervalStart, nameIndex, basesPerInterval, baseCount, true, true);
+            }
+            nameIndex++;
+        }
+
+        // Reverse locations
+        for (int i=baseCount; i > 0; i -= basesPerInterval)
+        {
+            int start = i - basesPerInterval;
+            addLocations(locations, start, nameIndex, basesPerInterval, baseCount, false, false);
+            int halfIntervalStart = start - halfIntervalSize;
+            int halfIntervalEnd = halfIntervalStart + basesPerInterval;
+            if (halfIntervalEnd > 0)
+            {
+                addLocations(locations, halfIntervalStart, nameIndex, basesPerInterval, baseCount, false, true);
+            }
             nameIndex++;
         }
         return locations;
     }
 
-    private static void addLocations(List<ProteinLocation> locations, int start, int nameIndex, int basesPerInterval, int baseCount, boolean isHalfInterval)
+    private static void addLocations(List<ProteinLocation> locations, int start, int nameIndex, int basesPerInterval, int baseCount, boolean isForward, boolean isHalfInterval)
+      throws IOException
     {
+        // 3 frame translation (see http://en.wikipedia.org/wiki/Reading_frame)
         for (int subIndex=0; subIndex < 3; subIndex++)
         {
-            int end = start + subIndex + basesPerInterval;
-            if (end >= baseCount)
+            int startIndex = start;
+            int endIndex = startIndex + basesPerInterval - 1;
+            if (isForward)
             {
-                end = baseCount - 1;
+                startIndex += subIndex;
+                endIndex   += subIndex;
+            }
+            else
+            {
+                startIndex -= subIndex;
+                endIndex   -= subIndex;
             }
 
-            String name = "p"+nameIndex+(isHalfInterval ? "b" : "")+"."+subIndex;
-            int length = end - (start + subIndex);
-            locations.add(new ProteinLocation(name, start+subIndex+1, length, ProteinLocation.FORWARD));
+            // Ensure the start and end positions are a multiple of 3.
+            // i.e. a full codon
+            if (startIndex <= 0)
+            {
+                int shiftFactor = endIndex % BASES_PER_CODON;
+                startIndex = 1 + shiftFactor;
+                //endIndex += shiftFactor;
+            }
+            if (endIndex > baseCount)
+            {
+                int leftOverBases = (baseCount - startIndex + 1) % BASES_PER_CODON;
+                endIndex = baseCount - leftOverBases;
+            }
+
+            if (startIndex >= endIndex)
+            {
+                continue;
+            }
+
+            String name = "p" +
+                          nameIndex +
+                          (isHalfInterval ? "b" : "") +
+                          "." +
+                          subIndex +
+                          (isForward ? "W" : "C");
+            int length = endIndex - startIndex + 1;
+            locations.add(new ProteinLocation(name, startIndex, length, isForward ? ProteinLocation.FORWARD : ProteinLocation.REVERSE));
         }
     }
 
@@ -163,7 +224,7 @@ public class ProteinGenerator {
                 writer.write(fastaHeader(databaseName, location.getName()));
                 writer.newLine();
                 String aminoAcidSequence = null;
-                if (location.getDirection().equals(ProteinLocation.BACKWARD))
+                if (location.getDirection().equals(ProteinLocation.REVERSE))
                 {
                     StringBuilder invertedReversedSequence = new StringBuilder(invertNucleotideSequence(sequence.toString())).reverse();
                     aminoAcidSequence = table.proteinToAminoAcidSequence(invertedReversedSequence.toString());
@@ -172,9 +233,18 @@ public class ProteinGenerator {
                 {
                     aminoAcidSequence = table.proteinToAminoAcidSequence(sequence.toString());
                 }
-                for (String part : aminoAcidSequence.split("(?<=\\G.{"+FASTA_LINE_LENGTH+"})"))
+                int sequenceLength = aminoAcidSequence.length();
+                int wholeParts = sequenceLength / FASTA_LINE_LENGTH;
+                int sequenceCursor = 0;
+                for (int i=0; i < wholeParts; i++)
                 {
-                    writer.write(part);
+                    writer.write(aminoAcidSequence.substring(sequenceCursor, sequenceCursor + FASTA_LINE_LENGTH));
+                    writer.newLine();
+                    sequenceCursor += FASTA_LINE_LENGTH;
+                }
+                if (sequenceCursor < sequenceLength)
+                {
+                    writer.write(aminoAcidSequence.substring(sequenceCursor, sequenceLength));
                     writer.newLine();
                 }
             }

@@ -3,7 +3,7 @@ package au.org.intersect.protein_generator;
 public class ProteinLocation
 {
     public static final String FORWARD = "+";
-    public static final String BACKWARD = "-";
+    public static final String REVERSE = "-";
 
     private String name;
     private int startIndex;

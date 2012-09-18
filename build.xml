@@ -61,6 +61,20 @@
       <!-- Create the distribution directory -->
       <mkdir dir="${dist}/lib"/>
 
+      <jar destfile="${dist}/nucleotide_to_amino_acid.jar"
+        basedir="${build.classes.dir}"
+        includes="**/*Translation*.class,**/UnknownCodonException.class">
+        <zipgroupfileset dir="${lib.dir}" includes="**/*.jar" excludes="junit*"/>
+          <fileset dir=".">
+              <include name="LICENSE"/>
+          </fileset>
+
+          <manifest>
+            <attribute name="Main-Class"
+                value="au.org.intersect.protein_generator.CodonTranslationTable"/>
+          </manifest>
+      </jar>
+
       <jar destfile="${dist}/${app.name}.jar"
         basedir="${build.classes.dir}"
         excludes="**/Test.class" >
