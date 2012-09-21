@@ -207,7 +207,6 @@ public class ProteinGenerator {
         throws IOException, FileNotFoundException, UnknownCodonException
     {
         BufferedWriter writer = null;
-        Collections.sort(locations, new ProteinLocationComparator());
         StringBuilder genomeString = null;
         try {
             genomeString = readGenomeFile(genomeFile);
@@ -326,6 +325,7 @@ public class ProteinGenerator {
             {
                 File glimmerFile = new File(glimmerFilePath);
                 locations = ProteinGenerator.parseGlimmerFile(glimmerFile);
+                Collections.sort(locations, new ProteinLocationComparator());
             }
             else
             {
