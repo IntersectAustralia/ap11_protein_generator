@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -313,19 +311,20 @@ public class ProteinGenerator {
             CommandLine line = parser.parse( options, args );
             File translationTableFile = new File(line.getOptionValue("t"));
             File genomeFile = new File(line.getOptionValue("f"));
-            File glimmerFile = new File(line.getOptionValue("g"));
+            String glimmerFilePath = line.getOptionValue("g");
             String interval = line.getOptionValue("i");
             String databaseName = line.getOptionValue("d");
             File outfile = new File(line.getOptionValue("o"));
 
-            if ((glimmerFile == null && interval == null) ||
-                (glimmerFile != null && interval != null))
+            if ((glimmerFilePath == null && interval == null) ||
+                (glimmerFilePath != null && interval != null))
             {
                 throw new ParseException("Only one of -i or -g permitted");
             }
             List<ProteinLocation> locations = null;
-            if (glimmerFile != null)
+            if (glimmerFilePath != null)
             {
+                File glimmerFile = new File(glimmerFilePath);
                 locations = ProteinGenerator.parseGlimmerFile(glimmerFile);
             }
             else

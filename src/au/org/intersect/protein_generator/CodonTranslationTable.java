@@ -153,6 +153,7 @@ public class CodonTranslationTable
             codonCount++;
             if (stopCodons.contains(codon))
             {
+                aminoAcidSequence.append("*");
                 continue;
             }
             String aminoAcid = toAminoAcid(codon);
