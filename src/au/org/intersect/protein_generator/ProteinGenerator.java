@@ -140,10 +140,17 @@ public class ProteinGenerator {
     private static void addLocations(List<ProteinLocation> locations, int start, int nameIndex, int basesPerInterval, int baseCount, boolean isForward, boolean isHalfInterval)
       throws IOException
     {
+        boolean oddNumberOfBases = basesPerInterval % 2 == 1;
+
         // 3 frame translation (see http://en.wikipedia.org/wiki/Reading_frame)
         for (int subIndex=0; subIndex < 3; subIndex++)
         {
             int startIndex = start;
+            if (oddNumberOfBases && isHalfInterval)
+            {
+                startIndex += isForward ? -1 : 1;
+            }
+
             int endIndex = startIndex + basesPerInterval - 1;
             if (isForward)
             {
