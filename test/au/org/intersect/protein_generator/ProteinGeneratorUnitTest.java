@@ -20,7 +20,7 @@ public final class ProteinGeneratorUnitTest
     @Test
     public void testParsingGlimmerFile()
     {
-        File f = new File(getClass().getResource("/test_glimmer.txt").getFile());
+        File f = new File("test/resources/test_glimmer.txt");
         List<ProteinLocation> proteins = null;
         try {
             proteins = ProteinGenerator.parseGlimmerFile(f);
@@ -44,14 +44,14 @@ public final class ProteinGeneratorUnitTest
     public void testGenerateProteinsFileFromGlimmerInput()
     {
         try {
-            File genomeFile = new File(getClass().getResource("/test_genome.faa").getFile());
-            File glimmerFile = new File(getClass().getResource("/test_glimmer.txt").getFile());
-            File tableFile = new File(getClass().getResource("/bacterial_translation_table.txt").getFile());
+            File genomeFile = new File("test/resources/test_genome.faa");
+            File glimmerFile = new File("test/resources/test_glimmer.txt");
+            File tableFile = new File("test/resources/bacterial_translation_table.txt");
             List<ProteinLocation> locations = ProteinGenerator.parseGlimmerFile(glimmerFile);
             CodonTranslationTable translationTable = CodonTranslationTable.parseTableFile(tableFile);
             StringWriter out = new StringWriter();
             ProteinGenerator.generateProteinsFile("testdb", genomeFile, locations, translationTable, out);
-            List<String> expectedLines = FileUtils.readLines(new File(getClass().getResource("/test_protein_file.fa").getFile()));
+            List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_protein_file.fa"));
 
             assertEquals("Should produce a FASTA file of amino acid sequences", expectedLines.toArray(new String[0]), out.toString().split(System.getProperty("line.separator")));
         }
@@ -66,7 +66,7 @@ public final class ProteinGeneratorUnitTest
     public void testCreateLocations()
     {
         try {
-            File genomeFile = new File(getClass().getResource("/test_genome_short.faa").getFile());
+            File genomeFile = new File("test/resources/test_genome_short.faa");
             List<ProteinLocation> locations = ProteinGenerator.createLocations(genomeFile, 20);
             for (ProteinLocation loc : locations)
             {
@@ -112,17 +112,18 @@ public final class ProteinGeneratorUnitTest
     public void testGenerateVirtualProteins()
     {
         try {
-            File genomeFile = new File(getClass().getResource("/test_genome_short.faa").getFile());
-            File tableFile = new File(getClass().getResource("/bacterial_translation_table.txt").getFile());
+            File genomeFile = new File("test/resources/test_genome_short.faa");
+            File tableFile = new File("test/resources/bacterial_translation_table.txt");
             CodonTranslationTable translationTable = CodonTranslationTable.parseTableFile(tableFile);
             StringWriter out = new StringWriter();
             //java.io.FileWriter out = new java.io.FileWriter(new File("/tmp/virtual_proteins.fa"));
             List<ProteinLocation> locations = ProteinGenerator.createLocations(genomeFile, 20);
             ProteinGenerator.generateProteinsFile("testdb", genomeFile, locations, translationTable, out);
 
-            List<String> expectedLines = FileUtils.readLines(new File(getClass().getResource("/test_virtual_protein_file.fa").getFile()));
 
-            assertEquals("Should produce a FASTA file of amino acid sequences", expectedLines.toArray(new String[0]), out.toString().split(System.getProperty("line.separator")));
+            List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_virtual_protein_file.fa"));
+            String [] outputAsArray = out.toString().split(System.getProperty("line.separator"));
+            assertEquals("Should produce a FASTA file of amino acid sequences", expectedLines.toArray(new String[0]), outputAsArray);
         }
         catch(Exception e)
         {

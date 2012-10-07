@@ -14,7 +14,7 @@ public class CodonTranslationTableUnitTest
     public void testParseTableFile()
     {
         try {
-            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            File f = new File("test/resources/standard_code_translation_table.txt");
             CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
             assertEquals("ATT codes for Isoleucine", "I", table.toAminoAcid("ATT"));
             assertEquals("Should have 61 codons", 61, table.getCodons().length);
@@ -32,7 +32,7 @@ public class CodonTranslationTableUnitTest
     public void testToStartAminoAcid()
     {
         try {
-            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            File f = new File("test/resources/standard_code_translation_table.txt");
             CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
 
             assertEquals("TTG maps to M", "M", table.toStartAminoAcid("TTG"));
@@ -50,7 +50,7 @@ public class CodonTranslationTableUnitTest
     public void testToAminoAcid()
     {
         try {
-            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            File f = new File("test/resources/standard_code_translation_table.txt");
             CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
 
             assertEquals("A codon containing nucleotide W maps to X", "X", table.toAminoAcid("AAW"));
@@ -73,9 +73,11 @@ public class CodonTranslationTableUnitTest
     public void testNucleotideToAminoAcidSequence()
     {
         try {
-            File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+            File f = new File("test/resources/standard_code_translation_table.txt");
             CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
-            assertEquals("Stop codons are not translated", "", table.proteinToAminoAcidSequence("TAATAGTGA"));
+
+            // Stop codons need to be translated
+            assertEquals("Stop codons are translated", "***", table.proteinToAminoAcidSequence("TAATAGTGA"));
 
             // All the sequences below start with the standard start codon ATG
             // Isoleucine
@@ -146,7 +148,7 @@ public class CodonTranslationTableUnitTest
     public void testNucleotideToAminoAcidSequenceWithBadCodon()
         throws Exception
     {
-        File f = new File(getClass().getResource("/standard_code_translation_table.txt").getFile());
+        File f = new File("test/resources/standard_code_translation_table.txt");
         CodonTranslationTable table = CodonTranslationTable.parseTableFile(f);
         table.proteinToAminoAcidSequence("ZZZ");
     }
