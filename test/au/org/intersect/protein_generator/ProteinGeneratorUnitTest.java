@@ -12,7 +12,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 /**
- * * Tests {@link Samifier}
+ * * Tests {@link ProteinGenerator}
  * */
 public final class ProteinGeneratorUnitTest
 {
