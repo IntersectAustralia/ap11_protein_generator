@@ -11,7 +11,10 @@ public class ProteinLocation
     private int startIndex;
     private int length;
     private String direction;
+
     private BigDecimal confidenceScore;
+
+    private String frame;
 
     public ProteinLocation(String name, int startIndex, int length, String direction)
     {
@@ -20,15 +23,17 @@ public class ProteinLocation
         this.length = length;
         this.direction = direction;
         this.confidenceScore = null;
+        this.frame = null;
     }
 
-    public ProteinLocation(String name, int startIndex, int length, String direction, BigDecimal confidenceScore)
+    public ProteinLocation(String name, int startIndex, int length, String direction, BigDecimal confidenceScore, String frame)
     {
         this.name = name;
         this.startIndex = startIndex;
         this.length = length;
         this.direction = direction;
         this.confidenceScore = confidenceScore;
+        this.frame = frame;
     }
 
     public String getName()
@@ -46,9 +51,24 @@ public class ProteinLocation
         return length;
     }
 
+    public int getStop()
+    {
+        return startIndex + length;
+    }
+
     public String getDirection()
     {
         return direction;
+    }
+
+    public BigDecimal getConfidenceScore()
+    {
+        return confidenceScore;
+    }
+
+    public String getFrame()
+    {
+        return frame;
     }
 
     public String toString()

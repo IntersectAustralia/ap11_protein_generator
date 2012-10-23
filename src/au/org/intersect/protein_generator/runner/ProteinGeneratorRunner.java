@@ -1,6 +1,7 @@
 package au.org.intersect.protein_generator.runner;
 
 import au.org.intersect.protein_generator.domain.CodonTranslationTable;
+import au.org.intersect.protein_generator.domain.GffOutputter;
 import au.org.intersect.protein_generator.domain.ProteinLocation;
 import au.org.intersect.protein_generator.domain.UnknownCodonException;
 import au.org.intersect.protein_generator.generator.CodonsPerIntervalLocationGenerator;
@@ -50,6 +51,27 @@ public class ProteinGeneratorRunner
 
         List<ProteinLocation> locations = locationGenerator.generateLocations();
         generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), outputWriter);
+        if (gffWriter != null)
+        {
+            String genomeFileName = genomeFile.getName();
+            BufferedWriter writer = null;
+            try
+            {
+                writer = new BufferedWriter(gffWriter);
+                for (ProteinLocation location : locations)
+                {
+                    GffOutputter gffOutputter = new GffOutputter(location, genomeFileName);
+                    writer.append(gffOutputter.toString());
+                }
+            }
+            finally
+            {
+                if (writer != null)
+                {
+                    writer.close();
+                }
+            }
+        }
 
     }
 

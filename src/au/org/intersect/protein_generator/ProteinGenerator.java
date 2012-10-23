@@ -99,10 +99,12 @@ public class ProteinGenerator {
             File outfile = new File(line.getOptionValue("o"));
             Writer outputWriter = new FileWriter(outfile);
 
-            File gffFile = new File(line.getOptionValue("p"));
+            String gffFilenanme = line.getOptionValue("p");
             Writer gffWriter = null;
-            if (gffFile != null)
+
+            if (gffFilenanme != null)
             {
+                File gffFile = new File(gffFilenanme);
                 gffWriter = new FileWriter(gffFile);
             }
 
