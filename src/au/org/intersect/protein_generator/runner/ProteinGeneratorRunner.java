@@ -23,8 +23,9 @@ public class ProteinGeneratorRunner
     private String databaseName;
     private Writer outputWriter;
     private File translationTableFile;
+    private Writer gffWriter;
 
-    public ProteinGeneratorRunner(String glimmerFilePath, File genomeFile, String interval, String databaseName, Writer outputWriter, File translationTableFile)
+    public ProteinGeneratorRunner(String glimmerFilePath, File genomeFile, String interval, String databaseName, Writer outputWriter, File translationTableFile, Writer gffWriter)
     {
         this.glimmerFilePath = glimmerFilePath;
         this.genomeFile = genomeFile;
@@ -32,6 +33,7 @@ public class ProteinGeneratorRunner
         this.databaseName = databaseName;
         this.outputWriter = outputWriter;
         this.translationTableFile = translationTableFile;
+        this.gffWriter = gffWriter;
     }
 
     public void run() throws Exception
@@ -53,7 +55,7 @@ public class ProteinGeneratorRunner
 
 
     public void generateProteinsFile(String databaseName, File genomeFile, List<ProteinLocation> locations, CodonTranslationTable table, Writer output)
-            throws IOException, FileNotFoundException, UnknownCodonException
+            throws IOException, UnknownCodonException
     {
         BufferedWriter writer = null;
         StringBuilder genomeString = null;
@@ -61,7 +63,6 @@ public class ProteinGeneratorRunner
             genomeString = readGenomeFile(genomeFile);
             writer = new BufferedWriter(output);
 
-            // Skip header
             for (ProteinLocation location : locations)
             {
                 int startIndex = location.getStartIndex() - 1;
@@ -97,7 +98,6 @@ public class ProteinGeneratorRunner
         }
         finally
         {
-            genomeString = null;
             if (writer != null)
             {
                 writer.close();

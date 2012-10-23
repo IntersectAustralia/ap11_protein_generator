@@ -73,6 +73,12 @@ public class ProteinGenerator {
                          .withDescription("Filename to write the FASTA format file to")
                          .isRequired()
                          .create("o");
+        Option gffFileOpt =
+                OptionBuilder.withArgName("GFF File")
+                        .hasArg()
+                        .withDescription("Filename to write the GFF file to")
+                        .isRequired(false)
+                        .create("p");
         Options options = new Options();
         options.addOption(translationTableOpt);
         options.addOption(splitIntervalOpt);
@@ -80,6 +86,7 @@ public class ProteinGenerator {
         options.addOption(genomeFileOpt);
         options.addOption(databaseNameOpt);
         options.addOption(outputFileOpt);
+        options.addOption(gffFileOpt);
 
         CommandLineParser parser = new GnuParser();
         try {
@@ -92,12 +99,19 @@ public class ProteinGenerator {
             File outfile = new File(line.getOptionValue("o"));
             Writer outputWriter = new FileWriter(outfile);
 
+            File gffFile = new File(line.getOptionValue("p"));
+            Writer gffWriter = null;
+            if (gffFile != null)
+            {
+                gffWriter = new FileWriter(gffFile);
+            }
+
             if ((glimmerFilePath == null && interval == null) ||
                 (glimmerFilePath != null && interval != null))
             {
                 throw new ParseException("Only one of -i or -g permitted");
             }
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, interval, databaseName, outputWriter, translationTableFile);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, interval, databaseName, outputWriter, translationTableFile, gffWriter);
             runner.run();
         }
         catch (ParseException pe)

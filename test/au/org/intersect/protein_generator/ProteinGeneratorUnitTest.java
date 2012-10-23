@@ -1,6 +1,5 @@
 package au.org.intersect.protein_generator;
 
-import au.org.intersect.protein_generator.generator.CodonsPerIntervalLocationGenerator;
 import au.org.intersect.protein_generator.runner.ProteinGeneratorRunner;
 import org.junit.Test;
 
@@ -27,7 +26,7 @@ public final class ProteinGeneratorUnitTest
 
             StringWriter out = new StringWriter();
 
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(null, genomeFile, "20", "testdb", out, tableFile);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(null, genomeFile, "20", "testdb", out, tableFile, null);
             runner.run();
 
             List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_virtual_protein_file.fa"));
@@ -61,7 +60,7 @@ public final class ProteinGeneratorUnitTest
             File tableFile = new File("test/resources/bacterial_translation_table.txt");
             StringWriter out = new StringWriter();
 
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, null, "testdb", out, tableFile);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, null, "testdb", out, tableFile, null);
 
             runner.run();
             List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_protein_file.fa"));

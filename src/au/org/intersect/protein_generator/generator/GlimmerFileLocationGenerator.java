@@ -6,6 +6,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +61,7 @@ public class GlimmerFileLocationGenerator implements LocationGenerator
             int firstIndex = Integer.parseInt(columns[1]);
             int secondIndex = Integer.parseInt(columns[2]);
             String direction = columns[3];
-            Integer confidenceScore = Integer.parseInt(columns[4]);
+            BigDecimal confidenceScore = new BigDecimal(columns[4]);
 
             if (direction.startsWith(ProteinLocation.FORWARD))
             {

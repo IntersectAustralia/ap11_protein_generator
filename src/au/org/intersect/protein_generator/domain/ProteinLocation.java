@@ -1,5 +1,7 @@
 package au.org.intersect.protein_generator.domain;
 
+import java.math.BigDecimal;
+
 public class ProteinLocation
 {
     public static final String FORWARD = "+";
@@ -9,7 +11,7 @@ public class ProteinLocation
     private int startIndex;
     private int length;
     private String direction;
-    private Integer confidenceScore;
+    private BigDecimal confidenceScore;
 
     public ProteinLocation(String name, int startIndex, int length, String direction)
     {
@@ -20,7 +22,7 @@ public class ProteinLocation
         this.confidenceScore = null;
     }
 
-    public ProteinLocation(String name, int startIndex, int length, String direction, Integer confidenceScore)
+    public ProteinLocation(String name, int startIndex, int length, String direction, BigDecimal confidenceScore)
     {
         this.name = name;
         this.startIndex = startIndex;
