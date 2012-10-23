@@ -71,7 +71,7 @@
 
           <manifest>
             <attribute name="Main-Class"
-                value="au.org.intersect.protein_generator.CodonTranslationTable"/>
+                value="au.org.intersect.protein_generator.domain.CodonTranslationTable"/>
           </manifest>
       </jar>
 

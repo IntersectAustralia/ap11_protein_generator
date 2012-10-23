@@ -1,4 +1,4 @@
-package au.org.intersect.protein_generator;
+package au.org.intersect.protein_generator.domain;
 
 public class UnknownCodonException extends Exception
 {

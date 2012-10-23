@@ -1,8 +1,9 @@
 package au.org.intersect.protein_generator;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 
+import au.org.intersect.protein_generator.domain.CodonTranslationTable;
+import au.org.intersect.protein_generator.domain.UnknownCodonException;
 import org.junit.Test;
 
 import java.io.File;
