@@ -60,14 +60,15 @@ public class GlimmerFileLocationGenerator implements LocationGenerator
             int firstIndex = Integer.parseInt(columns[1]);
             int secondIndex = Integer.parseInt(columns[2]);
             String direction = columns[3];
+            Integer confidenceScore = Integer.parseInt(columns[4]);
 
             if (direction.startsWith(ProteinLocation.FORWARD))
             {
-                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, ProteinLocation.FORWARD));
+                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, ProteinLocation.FORWARD, confidenceScore));
             }
             else if (direction.startsWith(ProteinLocation.REVERSE))
             {
-                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.REVERSE));
+                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.REVERSE, confidenceScore));
             }
             else
             {

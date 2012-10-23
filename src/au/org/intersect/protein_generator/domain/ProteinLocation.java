@@ -9,6 +9,7 @@ public class ProteinLocation
     private int startIndex;
     private int length;
     private String direction;
+    private Integer confidenceScore;
 
     public ProteinLocation(String name, int startIndex, int length, String direction)
     {
@@ -16,6 +17,16 @@ public class ProteinLocation
         this.startIndex = startIndex;
         this.length = length;
         this.direction = direction;
+        this.confidenceScore = null;
+    }
+
+    public ProteinLocation(String name, int startIndex, int length, String direction, Integer confidenceScore)
+    {
+        this.name = name;
+        this.startIndex = startIndex;
+        this.length = length;
+        this.direction = direction;
+        this.confidenceScore = confidenceScore;
     }
 
     public String getName()
