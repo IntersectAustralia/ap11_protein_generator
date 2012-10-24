@@ -141,7 +141,8 @@ public class CodonsPerIntervalLocationGenerator implements LocationGenerator
                     subIndex +
                     (isForward ? "W" : "C");
             int length = endIndex - startIndex + 1;
-            locations.add(new ProteinLocation(name, startIndex, length, isForward ? ProteinLocation.FORWARD : ProteinLocation.REVERSE));
+            String frame = Integer.toString(subIndex + 1);
+            locations.add(new ProteinLocation(name, startIndex, length, isForward ? ProteinLocation.FORWARD : ProteinLocation.REVERSE, null, frame));
         }
     }
 
