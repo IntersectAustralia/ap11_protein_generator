@@ -3,15 +3,7 @@ package au.org.intersect.protein_generator.domain;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
-/**
- * Created with IntelliJ IDEA.
- * User: diego
- * Date: 24/10/12
- * Time: 8:34 AM
- * To change this template use File | Settings | File Templates.
- */
 public class GffOutputterUnitTest
 {
     public GffOutputterUnitTest()

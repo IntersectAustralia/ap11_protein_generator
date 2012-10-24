@@ -79,6 +79,12 @@ public class ProteinGenerator {
                         .withDescription("Filename to write the GFF file to")
                         .isRequired(false)
                         .create("p");
+        Option accessionFileOpt =
+                OptionBuilder.withArgName("Accession File")
+                        .hasArg()
+                        .withDescription("Filename to write the accession file to")
+                        .isRequired(false)
+                        .create("q");
         Options options = new Options();
         options.addOption(translationTableOpt);
         options.addOption(splitIntervalOpt);
@@ -87,6 +93,7 @@ public class ProteinGenerator {
         options.addOption(databaseNameOpt);
         options.addOption(outputFileOpt);
         options.addOption(gffFileOpt);
+        options.addOption(accessionFileOpt);
 
         CommandLineParser parser = new GnuParser();
         try {
@@ -99,13 +106,22 @@ public class ProteinGenerator {
             File outfile = new File(line.getOptionValue("o"));
             Writer outputWriter = new FileWriter(outfile);
 
-            String gffFilenanme = line.getOptionValue("p");
+            String gffFilename = line.getOptionValue("p");
             Writer gffWriter = null;
 
-            if (gffFilenanme != null)
+            if (gffFilename != null)
             {
-                File gffFile = new File(gffFilenanme);
+                File gffFile = new File(gffFilename);
                 gffWriter = new FileWriter(gffFile);
+            }
+
+            String accessionFilename = line.getOptionValue("q");
+            Writer accessionWriter = null;
+
+            if (accessionFilename != null)
+            {
+                File accessionFile = new File(accessionFilename);
+                accessionWriter = new FileWriter(accessionFile);
             }
 
             if ((glimmerFilePath == null && interval == null) ||
@@ -113,7 +129,8 @@ public class ProteinGenerator {
             {
                 throw new ParseException("Only one of -i or -g permitted");
             }
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, interval, databaseName, outputWriter, translationTableFile, gffWriter);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, interval,
+                    databaseName, outputWriter, translationTableFile, gffWriter, accessionWriter);
             runner.run();
         }
         catch (ParseException pe)

@@ -26,7 +26,7 @@ public final class ProteinGeneratorUnitTest
 
             StringWriter out = new StringWriter();
 
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(null, genomeFile, "20", "testdb", out, tableFile, null);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(null, genomeFile, "20", "testdb", out, tableFile, null, null);
             runner.run();
 
             List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_virtual_protein_file.fa"));
@@ -45,13 +45,6 @@ public final class ProteinGeneratorUnitTest
         }
     }
 
-    // TODO
-    //@Test
-    //public void testInvertNucleotideSequence()
-    //{
-    //    assertEquals("Should convert a nucleotide sequence to its complement nucleotides", "GATTACA", ProteinGeneratorRunner.invertNucleotideSequence("CTAATGT"));
-    //}
-
     @Test
     public void testGenerateProteinsFileFromGlimmerInput()
     {
@@ -61,7 +54,7 @@ public final class ProteinGeneratorUnitTest
             File tableFile = new File("test/resources/bacterial_translation_table.txt");
             StringWriter out = new StringWriter();
 
-            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, null, "testdb", out, tableFile, null);
+            ProteinGeneratorRunner runner = new ProteinGeneratorRunner(glimmerFilePath, genomeFile, null, "testdb", out, tableFile, null, null);
 
             runner.run();
             List<String> expectedLines = FileUtils.readLines(new File("test/resources/test_protein_file.fa"));

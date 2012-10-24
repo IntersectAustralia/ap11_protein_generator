@@ -22,8 +22,10 @@ public class ProteinGeneratorRunner
     private Writer outputWriter;
     private File translationTableFile;
     private Writer gffWriter;
+    private Writer accessionWriter;
 
-    public ProteinGeneratorRunner(String glimmerFilePath, File genomeFile, String interval, String databaseName, Writer outputWriter, File translationTableFile, Writer gffWriter)
+    public ProteinGeneratorRunner(String glimmerFilePath, File genomeFile, String interval, String databaseName,
+                                  Writer outputWriter, File translationTableFile, Writer gffWriter, Writer accessionWriter)
     {
         this.glimmerFilePath = glimmerFilePath;
         this.genomeFile = genomeFile;
@@ -32,14 +34,16 @@ public class ProteinGeneratorRunner
         this.outputWriter = outputWriter;
         this.translationTableFile = translationTableFile;
         this.gffWriter = gffWriter;
+        this.accessionWriter = accessionWriter;
     }
 
     public void run() throws Exception
     {
         LocationGenerator locationGenerator = createLocationGenerator();
         List<ProteinLocation> locations = locationGenerator.generateLocations();
-        generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), outputWriter);
+        generateProteinsFile(locations, CodonTranslationTable.parseTableFile(translationTableFile));
         generateGffFile(locations);
+        generateAccessionFile(locations);
     }
 
     private LocationGenerator createLocationGenerator()
@@ -63,7 +67,13 @@ public class ProteinGeneratorRunner
         ProteingLocationFileGenerator.generateFile(locations, gffWriter, outputterGenerator);
     }
 
-    public void generateProteinsFile(String databaseName, File genomeFile, List<ProteinLocation> locations, CodonTranslationTable table, Writer output)
+    private void generateAccessionFile(List<ProteinLocation> locations) throws IOException
+    {
+        AccessionOutputterGenerator outputterGenerator = new AccessionOutputterGenerator();
+        ProteingLocationFileGenerator.generateFile(locations, accessionWriter, outputterGenerator);
+    }
+
+    public void generateProteinsFile(List<ProteinLocation> locations, CodonTranslationTable table)
             throws IOException, UnknownCodonException
     {
         StringBuilder genomeString = readGenomeFile(genomeFile);
