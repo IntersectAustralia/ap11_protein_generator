@@ -1,12 +1,10 @@
 package au.org.intersect.protein_generator.runner;
 
-import au.org.intersect.protein_generator.domain.CodonTranslationTable;
-import au.org.intersect.protein_generator.domain.GffOutputter;
-import au.org.intersect.protein_generator.domain.ProteinLocation;
-import au.org.intersect.protein_generator.domain.UnknownCodonException;
+import au.org.intersect.protein_generator.domain.*;
 import au.org.intersect.protein_generator.generator.CodonsPerIntervalLocationGenerator;
 import au.org.intersect.protein_generator.generator.GlimmerFileLocationGenerator;
 import au.org.intersect.protein_generator.generator.LocationGenerator;
+import au.org.intersect.protein_generator.util.ProteingLocationFileGenerator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -16,7 +14,6 @@ public class ProteinGeneratorRunner
 {
 
     public static final int BASES_PER_CODON = 3;
-    public static final int FASTA_LINE_LENGTH = 60;
 
     private String glimmerFilePath;
     private File genomeFile;
@@ -39,7 +36,15 @@ public class ProteinGeneratorRunner
 
     public void run() throws Exception
     {
-        LocationGenerator locationGenerator = null;
+        LocationGenerator locationGenerator = createLocationGenerator();
+        List<ProteinLocation> locations = locationGenerator.generateLocations();
+        generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), outputWriter);
+        generateGffFile(locations);
+    }
+
+    private LocationGenerator createLocationGenerator()
+    {
+        LocationGenerator locationGenerator;
         if (glimmerFilePath != null)
         {
             locationGenerator = new GlimmerFileLocationGenerator(glimmerFilePath);
@@ -48,83 +53,22 @@ public class ProteinGeneratorRunner
         {
             locationGenerator = new CodonsPerIntervalLocationGenerator(interval, genomeFile);
         }
-
-        List<ProteinLocation> locations = locationGenerator.generateLocations();
-        generateProteinsFile(databaseName, genomeFile, locations, CodonTranslationTable.parseTableFile(translationTableFile), outputWriter);
-        if (gffWriter != null)
-        {
-            String genomeFileName = genomeFile.getName();
-            BufferedWriter writer = null;
-            try
-            {
-                writer = new BufferedWriter(gffWriter);
-                for (ProteinLocation location : locations)
-                {
-                    GffOutputter gffOutputter = new GffOutputter(location, genomeFileName);
-                    writer.append(gffOutputter.toString());
-                }
-            }
-            finally
-            {
-                if (writer != null)
-                {
-                    writer.close();
-                }
-            }
-        }
-
+        return locationGenerator;
     }
 
+    private void generateGffFile(List<ProteinLocation> locations) throws IOException
+    {
+        String genomeFileName = genomeFile.getName();
+        GffOutputterGenerator outputterGenerator = new GffOutputterGenerator(genomeFileName);
+        ProteingLocationFileGenerator.generateFile(locations, gffWriter, outputterGenerator);
+    }
 
     public void generateProteinsFile(String databaseName, File genomeFile, List<ProteinLocation> locations, CodonTranslationTable table, Writer output)
             throws IOException, UnknownCodonException
     {
-        BufferedWriter writer = null;
-        StringBuilder genomeString = null;
-        try {
-            genomeString = readGenomeFile(genomeFile);
-            writer = new BufferedWriter(output);
-
-            for (ProteinLocation location : locations)
-            {
-                int startIndex = location.getStartIndex() - 1;
-                int stopIndex = startIndex + location.getLength();
-                String sequence = genomeString.substring(startIndex, stopIndex);
-                writer.write(fastaHeader(databaseName, location.getName()));
-                writer.newLine();
-                String aminoAcidSequence = null;
-                if (location.getDirection().equals(ProteinLocation.REVERSE))
-                {
-                    StringBuilder invertedReversedSequence = new StringBuilder(invertNucleotideSequence(sequence.toString())).reverse();
-                    aminoAcidSequence = table.proteinToAminoAcidSequence(invertedReversedSequence.toString());
-                }
-                else
-                {
-                    aminoAcidSequence = table.proteinToAminoAcidSequence(sequence.toString());
-                }
-                int sequenceLength = aminoAcidSequence.length();
-                int wholeParts = sequenceLength / FASTA_LINE_LENGTH;
-                int sequenceCursor = 0;
-                for (int i=0; i < wholeParts; i++)
-                {
-                    writer.write(aminoAcidSequence.substring(sequenceCursor, sequenceCursor + FASTA_LINE_LENGTH));
-                    writer.newLine();
-                    sequenceCursor += FASTA_LINE_LENGTH;
-                }
-                if (sequenceCursor < sequenceLength)
-                {
-                    writer.write(aminoAcidSequence.substring(sequenceCursor, sequenceLength));
-                    writer.newLine();
-                }
-            }
-        }
-        finally
-        {
-            if (writer != null)
-            {
-                writer.close();
-            }
-        }
+        StringBuilder genomeString = readGenomeFile(genomeFile);
+        ProteinOutputterGenerator outputterGenerator = new ProteinOutputterGenerator(databaseName, genomeString, table);
+        ProteingLocationFileGenerator.generateFile(locations, outputWriter, outputterGenerator);
     }
 
     private StringBuilder readGenomeFile(File genomeFile)
@@ -144,15 +88,6 @@ public class ProteinGeneratorRunner
         return sequence;
     }
 
-    public static String invertNucleotideSequence(String sequence)
-    {
-        return StringUtils.replaceChars(sequence, "ACGT", "TGCA");
-    }
 
-
-    private static String fastaHeader(String db, String name)
-    {
-        return ">gn1|"+db+"|"+name;
-    }
 
 }

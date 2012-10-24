@@ -16,24 +16,24 @@ public class ProteinLocation
 
     private String frame;
 
-    public ProteinLocation(String name, int startIndex, int length, String direction)
+    public ProteinLocation(String name, int startIndex, int length, String direction, String frame)
     {
         this.name = name;
         this.startIndex = startIndex;
         this.length = length;
         this.direction = direction;
+        this.frame = frame;
         this.confidenceScore = null;
-        this.frame = null;
     }
 
-    public ProteinLocation(String name, int startIndex, int length, String direction, BigDecimal confidenceScore, String frame)
+    public ProteinLocation(String name, int startIndex, int length, String direction, String frame, BigDecimal confidenceScore)
     {
         this.name = name;
         this.startIndex = startIndex;
         this.length = length;
         this.direction = direction;
-        this.confidenceScore = confidenceScore;
         this.frame = frame;
+        this.confidenceScore = confidenceScore;
     }
 
     public String getName()

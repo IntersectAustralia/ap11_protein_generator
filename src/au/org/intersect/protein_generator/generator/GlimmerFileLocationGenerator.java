@@ -67,11 +67,11 @@ public class GlimmerFileLocationGenerator implements LocationGenerator
 
             if (direction.equals(ProteinLocation.FORWARD))
             {
-                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, direction, confidenceScore, frame));
+                proteinLocations.add(new ProteinLocation(name, firstIndex, secondIndex - firstIndex + 1, direction, frame, confidenceScore));
             }
             else if (direction.startsWith(ProteinLocation.REVERSE))
             {
-                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.REVERSE, confidenceScore, frame));
+                proteinLocations.add(new ProteinLocation(name, secondIndex, firstIndex - secondIndex + 1, ProteinLocation.REVERSE, frame, confidenceScore));
             }
             else
             {

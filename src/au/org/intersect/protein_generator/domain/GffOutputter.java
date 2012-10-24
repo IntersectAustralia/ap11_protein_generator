@@ -1,6 +1,6 @@
 package au.org.intersect.protein_generator.domain;
 
-public class GffOutputter
+public class GffOutputter implements Outputter
 {
     public String genomeFileName;
     public Integer start;
@@ -29,7 +29,7 @@ public class GffOutputter
     }
 
     @Override
-    public String toString()
+    public String getOutput()
     {
         StringBuilder output = new StringBuilder();
 
