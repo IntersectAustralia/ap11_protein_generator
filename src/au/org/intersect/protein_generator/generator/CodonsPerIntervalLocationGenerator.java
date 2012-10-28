@@ -136,10 +136,10 @@ public class CodonsPerIntervalLocationGenerator implements LocationGenerator
 
             String name = "p" +
                     nameIndex +
-                    (isHalfInterval ? "b" : "") +
-                    "." +
-                    subIndex +
-                    (isForward ? "W" : "C");
+                    (isHalfInterval ? "b" : "a") +
+                    "."  +
+                    (isForward ? "+" : "-") +
+                    (subIndex+1);
             int length = endIndex - startIndex + 1;
             String frame = Integer.toString(subIndex + 1);
             locations.add(new ProteinLocation(name, startIndex, length, isForward ? ProteinLocation.FORWARD : ProteinLocation.REVERSE, frame));

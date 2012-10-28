@@ -33,7 +33,7 @@ public class CodonsPerIntervalLocationGeneratorUnitTest
                 if (loc.getDirection().equals(ProteinLocation.FORWARD))
                 {
                     forward++;
-                    if (loc.getName().matches("p\\d+b\\.\\d+W"))
+                    if (loc.getName().matches("p\\d+b\\.\\+\\d+"))
                     {
                         forwardHalf++;
                     }
@@ -41,7 +41,7 @@ public class CodonsPerIntervalLocationGeneratorUnitTest
                 else
                 {
                     reverse++;
-                    if (loc.getName().matches("p\\d+b\\.\\d+C"))
+                    if (loc.getName().matches("p\\d+b\\.\\-\\d+"))
                     {
                         reverseHalf++;
                     }
@@ -58,5 +58,12 @@ public class CodonsPerIntervalLocationGeneratorUnitTest
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testProteinName()
+    {
+
+    }
+
 
 }
